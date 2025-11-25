@@ -1,12 +1,12 @@
 import torch
 import torch.nn as nn
 import os
-from tokenize_data import tokenize_text
-from sample import sequence_radom_iter
+from utils.tokenize_data import encode_text, tokenizer
 
 class MyDataset(torch.utils.data.Dataset):
-    def __init__(self, root, is_train=True):
+    def __init__(self, root, max_len, is_train=True):
         self.root = root
+        self.max_len = max_len
         self.is_train = is_train
         files = os.listdir(root)
         train_data = []
@@ -17,25 +17,28 @@ class MyDataset(torch.utils.data.Dataset):
                 train_data.extend(lines[:-1000])
                 test_data.extend(lines[-1000:])
         if is_train:
-            self.data = "".join(train_data)
-            self.data = tokenize_text(self.data)
+            self.data = train_data
         else:
-            self.data = "".join(test_data)
-            self.data = tokenize_text(self.data)
+            self.data = test_data
     
     def __len__(self):
         return len(self.data)
     
     def __getitem__(self, idx):
-        return self.data[idx]
-    def __repr__(self):
-        return f"MyDataset(root={self.root}, is_train={self.is_train}, length={len(self)})"
-    def get_sample(self, idx):
-        return self.__getitem__(idx)
-    def get_all_data(self):
-        return self.data
+        sample = encode_text(self.data[idx])
+        data = sample[:-1]
+        label = sample[1:]
+        if len(data) < self.max_len:
+            padding_length = self.max_len - len(data)
+            data += [tokenizer.pad_token_id] * padding_length
+            label += [-100] * padding_length
+        else:
+            data = data[:self.max_len]
+            label = label[:self.max_len]
+        return torch.tensor(data), torch.tensor(label)
 
 if __name__ == "__main__":
-    dataset = MyDataset(root='data/', is_train=True)
-    print(dataset.get_sample(0))
-    print(f"Total samples: {len(dataset)}")
+    train_dataset = MyDataset(root='data/', max_len=200, is_train=True)
+    print(f'Training samples: {len(train_dataset)}')
+    test_dataset = MyDataset(root='data/', max_len=200, is_train=False)
+    print(f'Testing samples: {len(test_dataset)}')

@@ -1,5 +1,6 @@
 import random
 import torch
+import numpy as np
 
 def sequence_radom_iter(data, batch_size, num_steps):
     """Generate a minibatch of subsequences using random sampling."""
@@ -18,8 +19,14 @@ def sequence_radom_iter(data, batch_size, num_steps):
     return data_iter()
 
 if __name__ == "__main__":
-    data = list(range(35))
+    file = '/data/home/scyb300/run/nlp/hw2/output/test/news.2008.zh.shuffled.deduped_test.npy'
+    data = np.load(file)
+    data = np.arange(30)
     batch_size, num_steps = 2, 5
     data_iter = sequence_radom_iter(data, batch_size, num_steps)
+    i = 0
     for X, Y in data_iter:
         print('X:', X, '\nY:', Y)
+        i += 1
+    print(data.shape)
+    print('Total batches:', i)
