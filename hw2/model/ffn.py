@@ -46,4 +46,5 @@ class FFN(nn.Module):
         x = x.permute(0, 2, 1)  # [batch_size, seq_len, d_model]
         # print(x.shape)
         out = self.ffn(x)  # [batch_size, seq_len, vocab_size]
+        # print(out.shape)
         return out

@@ -1,4 +1,6 @@
-import torch
+import wandb
+import os
 
-data = torch.randn(2, 3, 4)
-print(data.view(-1))
+run = wandb.init(project="nlp_hw2", name="test_run")
+run.log({"example_metric": 0.5})
+run.finish()

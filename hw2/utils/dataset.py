@@ -3,6 +3,7 @@ import torch.nn as nn
 import os
 from utils.tokenize_data import encode_text, tokenizer
 
+
 class MyDataset(torch.utils.data.Dataset):
     def __init__(self, root, max_len, is_train=True):
         self.root = root
@@ -36,7 +37,6 @@ class MyDataset(torch.utils.data.Dataset):
             data = data[:self.max_len]
             label = label[:self.max_len]
         return torch.tensor(data), torch.tensor(label)
-
 if __name__ == "__main__":
     train_dataset = MyDataset(root='data/', max_len=200, is_train=True)
     print(f'Training samples: {len(train_dataset)}')

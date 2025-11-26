@@ -8,12 +8,14 @@ if __name__ == "__main__":
     root = 'data'
     max_len = 0
     lengths = []
+    max_len = 0
     
     for file in os.listdir(root):
         with open(os.path.join(root, file), 'r') as f:
             lines = f.readlines()
             content += ''.join(lines)
             lengths.extend(list(map(len, lines)))
+            max_len = max(max_len, max(lengths))
 
     
     counter = collections.Counter(list(content))
@@ -25,10 +27,10 @@ if __name__ == "__main__":
     print("Bottom 10 least common words:")
     for word, count in sorted_counter[-10:]:
         print(f"{word}: {count}")
-    
+    print("Maximum line length:", max_len)
     print(np.mean(lengths), np.std(lengths), np.max(lengths), np.min(lengths))
-    plt.hist(lengths, bins=50)
-    plt.xlabel('Line Length')
-    plt.ylabel('Frequency')
-    plt.title('Distribution of Line Lengths')
-    plt.savefig('line_length_distribution.png')
+    # plt.hist(lengths, bins=50)
+    # plt.xlabel('Line Length')
+    # plt.ylabel('Frequency')
+    # plt.title('Distribution of Line Lengths')
+    # plt.savefig('line_length_distribution.png')
