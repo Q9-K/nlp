@@ -3,7 +3,7 @@ import torch.nn as nn
 from model.utils.token_embedding import TokenEmbedding
 
 class LSTM(nn.Module):
-    def __init__(self, vocab_size, embedding_dim, hidden_dim, n_layers = 1, dropout = 0.1):
+    def __init__(self, vocab_size, embedding_dim, hidden_dim, n_layers = 2, dropout = 0.1):
         super(LSTM, self).__init__()
         
         self.embedding = TokenEmbedding(vocab_size, embedding_dim)

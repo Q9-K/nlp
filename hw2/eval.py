@@ -1,6 +1,5 @@
 import torch
 import torch.nn as nn
-from torch.utils.tensorboard import SummaryWriter
 from utils.dataset import MyDataset
 from model.lstm import LSTM
 from model.attention import Attention
@@ -9,6 +8,10 @@ import os
 import argparse
 from tqdm import tqdm
 from torch.utils.data import DataLoader, RandomSampler
+import wandb
+from utils.ppl import compute_perplexity
+
+os.environ["WANDB_MODE"]="offline"
 
 config = {
     'model': None,
@@ -36,10 +39,10 @@ if __name__ == "__main__":
     args = parser.parse_args()
     config['model'] = args.model
     os.makedirs(f'output/{config["model"]}', exist_ok=True)
+    run = wandb.init(project="nlp_hw2", name=config["model"], config=config, dir=f'output/{config["model"]}')
     set_seed(42)
     device = config['device']
     print(f'Using device: {device}')
-    writer = SummaryWriter(log_dir='logs')
     test_dataset = MyDataset(root='data/', max_len=config['max_seq_len'], is_train=False)
     print(f'Testing samples: {len(test_dataset)}')
     test_loader = DataLoader(test_dataset, batch_size=config['batch_size'], shuffle=False, pin_memory=True)
@@ -54,12 +57,13 @@ if __name__ == "__main__":
     checkpoint_path = f'output/{config["model"]}/model_final.pth'
     model = model.to(device)
     model.load_state_dict(torch.load(checkpoint_path, map_location=device))
-    criterion = nn.CrossEntropyLoss()
+    criterion = nn.CrossEntropyLoss(reduction='none', ignore_index=-100)
     criterion = criterion.to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=config['learning_rate'])
     num_epochs = config['num_epochs']
     model.eval()
-    total_loss = 0.0
+    total_log_likelihood = 0.0
+    total_tokens = 0
     with torch.no_grad():
         for batch in tqdm(test_loader, desc="Evaluating"):
             inputs, targets = batch
@@ -67,8 +71,10 @@ if __name__ == "__main__":
             targets = targets.to(device)
             outputs = model(inputs)
             loss = criterion(outputs.view(-1, config['vocab_size']), targets.view(-1))
-            total_loss += loss.item()
-            writer.add_scalar('Test/Batch_Loss', loss.item())
-    avg_loss = total_loss / len(test_loader)
-    print(f'Test Loss: {avg_loss:.4f}')
-    writer.close()
+            # targets中-100为padding标记，不计入log likelihood计算
+            log_likelihood = -loss.sum().item()
+            total_log_likelihood += log_likelihood
+            total_tokens += (targets != -100).sum().item()
+    perplexity = compute_perplexity(total_log_likelihood, total_tokens)
+    print(f'Test Perplexity: {perplexity:.4f}')
+    run.finish()

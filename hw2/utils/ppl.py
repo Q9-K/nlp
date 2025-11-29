@@ -1,3 +1,4 @@
+import math
 def compute_perplexity(log_likelihood, num_tokens):
     """
     Compute the perplexity given the log likelihood and number of tokens.
@@ -12,7 +13,7 @@ def compute_perplexity(log_likelihood, num_tokens):
     if num_tokens <= 0:
         raise ValueError("Number of tokens must be greater than zero.")
     
-    perplexity = 2 ** (-log_likelihood / num_tokens)
+    perplexity =  math.e ** (-log_likelihood / num_tokens)
     return perplexity
 if __name__ == "__main__":
     # Example usage
