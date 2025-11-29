@@ -5,3 +5,6 @@ __pycache__/
 logs/
 output/
 run.sh
+*.zip
+*.tar.gz
+*.pdf
